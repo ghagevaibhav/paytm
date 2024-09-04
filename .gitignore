@@ -1,0 +1,84 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+.env
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.class
+*.jar
+*.war
+*.ear
+target/
+
+# C/C++
+*.out
+*.o
+*.obj
+*.so
+*.exe
+
+# C#
+*.dll
+*.pdb
+*.exe
+*.app
+*.log
+bin/
+obj/
+
+
+# Build directories
+/build/
+/dist/
+/out/
+
+# Debug/Release directories
+/Debug/
+/Release/
+
+
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains IDEs (IntelliJ, PyCharm, etc.)
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-workspace
+
+
+    # macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+
+
+# Package files
+*.zip
+*.tar.gz
