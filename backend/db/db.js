@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const { Schema, model } = mongoose;
+const ObjectId = Schema.ObjectId;
 
 try{
     mongoose.connect("mongodb+srv://admin:oMeyMiDShQNaLpUT@cluster0.cdutnom.mongodb.net/");
@@ -38,6 +39,22 @@ const userSchema = new Schema({
     }
 })
 
-const User = model('user', userSchema);
+const accountSchema = new Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    balance: {
+        type: Number,
+        required: true,
+    },
+})
 
-export default User;
+const User = model('user', userSchema);
+const Account = model('account', accountSchema);
+
+module.exports = {
+    User,
+    Account
+}

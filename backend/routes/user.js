@@ -18,7 +18,7 @@ router.post('/signup',async (req, res) => {
 
     if(!success){
         return res.status(411).json({
-            message: 'Email already Taken / Incorrect Inputs'
+            message: 'Incorrect Inputs'
         })
     }
 
@@ -28,7 +28,7 @@ router.post('/signup',async (req, res) => {
 
     if(exisingUser){
         res.status(411).json({
-            message: 'Email already Taken / Incorrect Inputs',
+            message: 'Email already Taken',
         })
     }
 
@@ -50,8 +50,101 @@ router.post('/signup',async (req, res) => {
 
 })
 
-router.post('/login', async (req, res) => {
+const signingBody = zod.object({
+    username: zod.string().email(),
+    password: zod.string().min(8)
+})
+
+router.post('/signin', async (req, res) => {
     const { username, password } = req.body;
+    const { success } = signingBody.safeParse(req.body);
+
+    if(!success){
+        return res.status(411).json({
+            message: "Incorrect Inputs"
+        })
+    }
+
+    const user = User.findOne({
+        username: username,
+        password: password,
+    })
+
+    if(user){
+        const token = jwt.sign({
+            userId: user._id
+        }, JWT_SECRET)
+
+        res.status(200).json({
+            message: "User logged in successfully",
+            token: token
+        })
+    }
+
+    res.status(411).json({
+        message: "Error while logging in"
+    })
+})
+
+const updateBody = zod.object({
+    password: zod.string().optional(),
+    firstname: zod.string().optional(),
+    lastname: zod.string().optional()
+})
+
+router.put("/", authMiddleware, async (req, res) => {
+    const { success } = updateBody.safeParse(req.body);
+    const { password, firstname, lastname } = req.body;
+
+    if(!success){
+        return res.status(411).json({
+            message: "Incorrect Inputs"
+        })
+    }
+
+    await User.updateOne({
+        _id: req.userId
+    }, {
+        password: password,
+        firstname: firstname,
+        lastname: lastname
+    })
+    
+    res.status(200).json({
+        message: "Updates Successfully"
+    })
+})
+
+router.get('/bulk', authMiddleware, async (req, res) => {
+    const filter = req.params.filter || "";
+
+    if(!filter){
+        return res.status(411).json({
+            message: "Incorrect Inputs"
+        })
+    }
+
+    const users = await User.find({
+        $or: [{
+            firstName: {
+                $regex: filter,
+            }
+        }, {
+            lastName: {
+                $regex: filter,
+            }
+        }]
+    })
+
+    return res.status(200).json({
+        user: users.map((user) => ({
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            _id: user._id
+        }))
+    })
+
 })
 
 module.exports = router;    
