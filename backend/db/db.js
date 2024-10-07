@@ -1,6 +1,5 @@
 require('dotenv').config();
-import mongoose from 'mongoose';
-
+const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 const ObjectId = Schema.ObjectId;
 

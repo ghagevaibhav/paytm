@@ -5,6 +5,8 @@ const { Account } = require('../db/db')
 const router = express.Router();
 import mongoose from 'mongoose';
 
+const zod = require("zod");
+
 // account routes 
 router.get('/balance', authMiddleware , async (req, res) => {
     const userId = req.userId;
@@ -20,7 +22,7 @@ router.get('/balance', authMiddleware , async (req, res) => {
 })
 
 const transferBody = Zod.object({
-    amount: Zod.number().positive(),
+    amount: zod.number().positive(),
     recipientId: Zod.string(),
 
 })
@@ -75,7 +77,7 @@ router.post('/transfer', authMiddleware, async (req, res) => {
         }).session(session)
 
         session.commitTransaction();
-        
+
         return res.status(200).json({
             message: "Transfer Successful"
         })
@@ -91,4 +93,4 @@ router.post('/transfer', authMiddleware, async (req, res) => {
     }
 })
 
-module.exports =  router;
+module.exports = { router };
