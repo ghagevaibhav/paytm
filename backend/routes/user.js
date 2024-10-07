@@ -1,12 +1,12 @@
 const express = require('express')
 const router = express.Router();
-const User = require('../db/db.js')
+const { User, Account } = require('../db/db')
 const zod = require("zod");
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require('../config.js')
+const { JWT_SECRET } = require('../config')
 
 const signupBody = zod.object({ 
-    username: zod.string().email().min(3).max(20),
+    username: zod.string().email(),
     firstName: zod.string().max(20),
     lastName: zod.string().max(20),
     password: zod.string().min(8)
@@ -38,13 +38,13 @@ router.post('/signup',async (req, res) => {
         lastName,
         password,
     })
+    const userId = user._id;
 
     await Account.create({
         userId,
         balance: 1 + Math.random() * 10000
     })
 
-    const userId = user._id;
     const token = jwt.sign({
         userId
     }, JWT_SECRET)
@@ -107,14 +107,10 @@ router.put("/", authMiddleware, async (req, res) => {
 
     await User.updateOne({
         _id: req.userId
-    }, {
-        password: password,
-        firstname: firstname,
-        lastname: lastname
-    })
+    }, req.body)
     
     res.status(200).json({
-        message: "Updates Successfully"
+        message: "Updated Successfully"
     })
 })
 
@@ -130,11 +126,11 @@ router.get('/bulk', authMiddleware, async (req, res) => {
     const users = await User.find({
         $or: [{
             firstName: {
-                $regex: filter,
+                "$regex": filter,
             }
         }, {
             lastName: {
-                $regex: filter,
+                "$regex": filter,
             }
         }]
     })

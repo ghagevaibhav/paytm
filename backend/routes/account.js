@@ -1,8 +1,9 @@
-import express from 'express';
-const router = express.Router();
-import { authMiddleware } from '../middleware'
-import mongoose from 'mongoose';
 require('dotenv').config();
+import express from 'express';
+import { authMiddleware } from '../middleware'
+const { Account } = require('../db/db')
+const router = express.Router();
+import mongoose from 'mongoose';
 
 // account routes 
 router.get('/balance', authMiddleware , async (req, res) => {
@@ -28,26 +29,35 @@ router.post('/transfer', authMiddleware, async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
 
-    const { amount, recipientId } = req.body;
-    const senderId = req.userId;
     const { success } = transferBody.safeParse(req.body);
-
+    
     if(!success) {
         return res.status(411).json({
             message: "Invalid Inputs"
         })
     }
 
+    const { amount, recipientId } = req.body;
+    const senderId = req.userId;
+
     try{
         const senderAcc = await Account.findOne({senderId: senderId}).session(session)
         const recipientAcc = await Account.findOne({userId: recipientId}).session(session)
         
-        if(!recipientAcc || !senderAcc || senderAcc.balance < amount) {
+        if(!senderAcc || senderAcc.balance < amount) {
             await session.abortTransaction();
             return res.status(400).json({
-                message: "Insufficient Balance or Invalid Recipient or Sender"
+                message: "Insufficient Balance or Invalid Sender"
             })
         }
+
+        if(!recipientAcc){
+            await session.abortTransaction();
+            return res.status(400).json({
+                message: "Invalid Recipient"
+            })
+        }
+
         await Account.updateOne({
             userId: senderId
         }, {
@@ -65,6 +75,7 @@ router.post('/transfer', authMiddleware, async (req, res) => {
         }).session(session)
 
         session.commitTransaction();
+        
         return res.status(200).json({
             message: "Transfer Successful"
         })
