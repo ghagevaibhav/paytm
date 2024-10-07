@@ -5,7 +5,7 @@ const { Schema, model } = mongoose;
 const ObjectId = Schema.ObjectId;
 
 try{
-    mongoose.connect(MONGO_URL);
+    mongoose.connect(process.env.MONGO_URL);
 }
 catch(error){
     console.log("Error connecting to the database: ", error);
