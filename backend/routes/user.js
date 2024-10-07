@@ -6,7 +6,7 @@ const zod = require("zod");
 const { User, Account } = require("../db/db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
-const  { authMiddleware } = require("../middleware");
+const  { authMiddleware } = require("../middleware/middleware");
 
 const signupBody = zod.object({
     username: zod.string().email(),
@@ -112,7 +112,7 @@ router.put("/update", authMiddleware, async (req, res) => {
         $set: req.body
     });
 
-    return res.json({
+    return res.status(200).json({
         message: "Updated successfully"
     })
 })

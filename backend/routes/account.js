@@ -1,6 +1,6 @@
 require('dotenv').config();
 import express from 'express';
-import { authMiddleware } from '../middleware'
+import { authMiddleware } from '../middleware/middleware'
 const { Account } = require('../db/db')
 const router = express.Router();
 import mongoose from 'mongoose';
