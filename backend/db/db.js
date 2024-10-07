@@ -1,10 +1,11 @@
-const mongoose = require('mongoose');
+require('dotenv').config();
+import mongoose from 'mongoose';
 
 const { Schema, model } = mongoose;
 const ObjectId = Schema.ObjectId;
 
 try{
-    mongoose.connect("mongodb+srv://admin:oMeyMiDShQNaLpUT@cluster0.cdutnom.mongodb.net/");
+    mongoose.connect(MONGO_URL);
 }
 catch(error){
     console.log("Error connecting to the database: ", error);
