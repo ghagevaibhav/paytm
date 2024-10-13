@@ -124,30 +124,26 @@ const updateBody = zod.object({
 
 router.put("/", authMiddleware, async (req, res) => {
     try {
-        // Validate the input with Zod (assuming `updateBody` is a Zod schema)
         const { success } = updateBody.safeParse(req.body);
         if (!success) {
             return res.status(400).json({
                 message: "Error while updating information"
             });
         }
+        const user = await User.findOne({ _id: req.userId });
 
-        // Create the $set object dynamically
-        const updateFields = {};
-        if (req.body.firstName) updateFields.firstName = req.body.firstName;
-        if (req.body.lastName) updateFields.lastName = req.body.lastName;
-        if (req.body.password) updateFields.password = req.body.password;
+        await user.updateOne({
+            $set: {
+                firstName: req.body.firstName || user.firstName,
+                lastName: req.body.lastName || user.lastName,
+                password: req.body.password || user.password,
+            }
+        })
 
-        // If there are fields to update
-        if (Object.keys(updateFields).length > 0) {
-            await User.updateOne(
-                { id: req.userId },
-                { $set: updateFields }
-            );
-            res.json({ message: "Updated successfully" });
-        } else {
-            res.status(400).json({ message: "No fields to update" });
-        }
+        res.json({
+            message: "Updated successfully"
+        });
+
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error" });
         console.error(error);
@@ -160,7 +156,7 @@ router.get("/bulk", async (req, res) => {
 
     const users = await User.find({
         $or: [{
-            firstName: {
+            firstName: { 
                 "$regex": filter
             }
         }, {
