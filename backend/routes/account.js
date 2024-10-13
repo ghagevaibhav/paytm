@@ -22,10 +22,6 @@ router.get('/balance', authMiddleware , async (req, res) => {
 })
 
 //tranfer money
-const transferBody = zod.object({
-    amount: zod.number().positive(),
-    recipientId: zod.string(),
-})
 
 router.post('/transfer', authMiddleware, async (req, res) => {
     const session = await mongoose.startSession();
@@ -39,7 +35,7 @@ router.post('/transfer', authMiddleware, async (req, res) => {
     if (!account || account.balance < amount) {
         await session.abortTransaction();
         return res.status(400).json({
-            message: "Insufficient balance"
+            message: "Insufficient balance or invalid account"
         });
     }
 
@@ -48,7 +44,7 @@ router.post('/transfer', authMiddleware, async (req, res) => {
     if (!toAccount) {
         await session.abortTransaction();
         return res.status(400).json({
-            message: "Invalid account"
+            message: "Invalid recipient account"
         });
     }
 
