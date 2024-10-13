@@ -1,4 +1,5 @@
-require('dotenv').config();
+const dotenv = require('dotenv')
+dotenv.config();
 const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 const ObjectId = Schema.ObjectId;
@@ -18,7 +19,7 @@ const userSchema = new Schema({
         trim: true,
         lowercase: true,
         minLength: 3,
-        maxLength: 20
+        maxLength: 50
     },
     password: {
         type: String,

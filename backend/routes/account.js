@@ -1,9 +1,9 @@
 require('dotenv').config();
-import express from 'express';
-import { authMiddleware } from '../middleware/middleware'
+const express = require('express')
+const { authMiddleware } = require('../middleware/middleware')
 const { Account } = require('../db/db')
 const router = express.Router();
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const zod = require("zod");
 
@@ -21,9 +21,9 @@ router.get('/balance', authMiddleware , async (req, res) => {
 
 })
 
-const transferBody = Zod.object({
+const transferBody = zod.object({
     amount: zod.number().positive(),
-    recipientId: Zod.string(),
+    recipientId: zod.string(),
 
 })
 
@@ -93,4 +93,4 @@ router.post('/transfer', authMiddleware, async (req, res) => {
     }
 })
 
-module.exports = { router };
+module.exports = router;

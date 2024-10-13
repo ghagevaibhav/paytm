@@ -1,4 +1,3 @@
-// backend/routes/user.js
 const express = require('express');
 
 const router = express.Router();
@@ -19,7 +18,7 @@ router.post("/signup", async (req, res) => {
     const { success } = signupBody.safeParse(req.body)
     if (!success) {
         return res.status(411).json({
-            message: "Email already taken / Incorrect inputs"
+            message: "Incorrect inputs"
         })
     }
 
@@ -29,7 +28,7 @@ router.post("/signup", async (req, res) => {
 
     if (existingUser) {
         return res.status(411).json({
-            message: "Email already taken/Incorrect inputs"
+            message: "Email already taken"
         })
     }
 
@@ -81,6 +80,7 @@ router.post("/signin", async (req, res) => {
         }, JWT_SECRET);
   
         res.json({
+            message: "User logged in successfully",
             token: token
         })
         return;
@@ -98,24 +98,62 @@ const updateBody = zod.object({
     lastName: zod.string().optional(),
 })
 
-router.put("/update", authMiddleware, async (req, res) => {
-    const { success } = updateBody.safeParse(req.body)
-    if (!success) {
-        res.status(411).json({
-            message: "Error while updating information"
-        })
+// router.put("/", authMiddleware, async (req, res) => {
+//     const { success } = updateBody.safeParse(req.body)
+//     if (!success) {
+//         res.status(411).json({
+//             message: "Error while updating information"
+//         })
+//     }
+    
+//     await User.updateOne({
+//         id: req.userId
+//     }, {
+//         $set: {
+//             "firstName": req.body.firstName,
+//             "lastName": req.body.lastName,
+//             "password": req.body.password,
+//         }
+//     });
+
+
+//     res.json({
+//         message: "Updated successfully"
+//     })
+// })
+
+router.put("/", authMiddleware, async (req, res) => {
+    try {
+        // Validate the input with Zod (assuming `updateBody` is a Zod schema)
+        const { success } = updateBody.safeParse(req.body);
+        if (!success) {
+            return res.status(400).json({
+                message: "Error while updating information"
+            });
+        }
+
+        // Create the $set object dynamically
+        const updateFields = {};
+        if (req.body.firstName) updateFields.firstName = req.body.firstName;
+        if (req.body.lastName) updateFields.lastName = req.body.lastName;
+        if (req.body.password) updateFields.password = req.body.password;
+
+        // If there are fields to update
+        if (Object.keys(updateFields).length > 0) {
+            await User.updateOne(
+                { id: req.userId },
+                { $set: updateFields }
+            );
+            res.json({ message: "Updated successfully" });
+        } else {
+            res.status(400).json({ message: "No fields to update" });
+        }
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error" });
+        console.error(error);
     }
+});
 
-    await User.updateOne({
-        _id: req.userId
-    }, {
-        $set: req.body
-    });
-
-    return res.status(200).json({
-        message: "Updated successfully"
-    })
-})
 
 router.get("/bulk", async (req, res) => {
     const filter = req.query.filter || "";
