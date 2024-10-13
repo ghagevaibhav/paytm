@@ -21,76 +21,46 @@ router.get('/balance', authMiddleware , async (req, res) => {
 
 })
 
+//tranfer money
 const transferBody = zod.object({
     amount: zod.number().positive(),
     recipientId: zod.string(),
-
 })
 
 router.post('/transfer', authMiddleware, async (req, res) => {
     const session = await mongoose.startSession();
+
     session.startTransaction();
+    const { amount, to } = req.body;
 
-    const { success } = transferBody.safeParse(req.body);
-    
-    if(!success) {
-        return res.status(411).json({
-            message: "Invalid Inputs"
-        })
-    }
+    // Fetch the accounts within the transaction
+    const account = await Account.findOne({ userId: req.userId }).session(session);
 
-    const { amount, recipientId } = req.body;
-    const senderId = req.userId;
-
-    try{
-        const senderAcc = await Account.findOne({senderId: senderId}).session(session)
-        const recipientAcc = await Account.findOne({userId: recipientId}).session(session)
-        
-        if(!senderAcc || senderAcc.balance < amount) {
-            await session.abortTransaction();
-            return res.status(400).json({
-                message: "Insufficient Balance or Invalid Sender"
-            })
-        }
-
-        if(!recipientAcc){
-            await session.abortTransaction();
-            return res.status(400).json({
-                message: "Invalid Recipient"
-            })
-        }
-
-        await Account.updateOne({
-            userId: senderId
-        }, {
-            $inc: {
-                balance: -amount
-            }
-        }).session(session)
-
-        await Account.updateOne({
-            userId: recipientId
-        }, {
-            $inc: {
-                balance: amount
-            }
-        }).session(session)
-
-        session.commitTransaction();
-
-        return res.status(200).json({
-            message: "Transfer Successful"
-        })
-        
-    }
-    catch(error){
+    if (!account || account.balance < amount) {
         await session.abortTransaction();
-        console.log(error);
-        throw error;
+        return res.status(400).json({
+            message: "Insufficient balance"
+        });
     }
-    finally{
-        session.endSession();
+
+    const toAccount = await Account.findOne({ userId: to }).session(session);
+
+    if (!toAccount) {
+        await session.abortTransaction();
+        return res.status(400).json({
+            message: "Invalid account"
+        });
     }
+
+    // Perform the transfer
+    await Account.updateOne({ userId: req.userId }, { $inc: { balance: -amount } }).session(session);
+    await Account.updateOne({ userId: to }, { $inc: { balance: amount } }).session(session);
+
+    // Commit the transaction
+    await session.commitTransaction();
+    res.json({
+        message: "Transfer successful"
+    });
 })
 
 module.exports = router;
