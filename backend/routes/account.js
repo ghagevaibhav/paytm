@@ -56,7 +56,7 @@ router.post('/transfer', authMiddleware, async (req, res) => {
     await session.commitTransaction();
     res.json({
         message: "Transfer successful"
-    });
+    }); 
 })
 
 module.exports = router;

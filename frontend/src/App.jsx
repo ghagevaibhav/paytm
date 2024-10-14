@@ -7,6 +7,8 @@ import { SendMoney } from './components/SendMoney'
 function App() {
 
   return <>
+    <h1 className="text-center text-4xl font-bold">Banking App</h1>
+
     <BrowserRouter>
       <Routes>
         <Route path='/signup' element={<SignupComponent />} />
