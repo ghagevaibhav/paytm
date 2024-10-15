@@ -19,7 +19,7 @@ export const Users = () => {
             clearTimeout(handler);
         };
     }, [filter])
-
+>
     useEffect(() => {
         axios.get("http://localhost:3000/api/v1/user/bulk?filter=" + debouncedFilter)
             .then(response => {
